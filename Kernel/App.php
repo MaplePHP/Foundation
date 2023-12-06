@@ -115,12 +115,12 @@ class App extends AppConfigs
                 foreach ($routerFiles as $file) {
                     if (!in_array($file, $this->exclRouterFiles)) {
                         $dir = $this->dir->getRoot();
-                        if(strpos($file, "/") === 0) {
-                            $path = "{$dir}".ltrim($file, "/");
+                        if(strpos($file, "./") === 0) {
+                            $path = realpath(dirname(__FILE__).substr($file, 1).".php");
                         } else {
-                            $path = "{$dir}app/Http/Routes/{$file}";
+                            $path = "{$dir}app/Http/Routes/{$file}.php";
                         }
-                        $this->includeRoutes($this->dispatcher, "{$path}.php");
+                        $this->includeRoutes($this->dispatcher, $path);
                     }
                 }
             }
@@ -129,7 +129,7 @@ class App extends AppConfigs
 
     protected function defualtRoutes(array $routerFiles) {
         if($this->dispatcher->getMethod() === "CLI") {
-            $routerFiles[] = "/app/Libraries/Foundation/Cli/Routers/default";
+            $routerFiles[] = "./../Cli/Routers/default";
         }
         return $routerFiles;
     }
