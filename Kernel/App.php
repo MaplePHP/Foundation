@@ -42,7 +42,7 @@ class App extends AppConfigs
         $connect = $this->getenv("MYSQL_HOST");
         $database = $this->getenv("MYSQL_DATABASE");
 
-        if ($this->hasDBEngine && $connect && $database) {
+        if ($this->hasDBEngine && is_string($connect) && is_string($database)) {
             $connect = new Connect(
                 $connect,
                 $this->getenv("MYSQL_USERNAME"),
