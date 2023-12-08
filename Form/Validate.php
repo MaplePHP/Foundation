@@ -61,6 +61,6 @@ class Validate
             ]);
             return false;
         }
-        return $this->container->encode($validate->getRequest())->encode()->get();
+        return $this->container->encode($validate->getRequest())->encode();
     }
 }
