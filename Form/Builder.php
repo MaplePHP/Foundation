@@ -17,8 +17,7 @@ class Builder
 
     protected $form;
     protected $csrf;
-    //private $key;
-
+    
     /**
      * Form modal will combine all essentials libraries
      * @param ContainerInterface $container
@@ -57,6 +56,25 @@ class Builder
     }
 
     /**
+     * Validate CSRF token
+     * @param  string  $token
+     * @return boolean
+     */
+    public function isValidToken(string $token): bool
+    {
+        return $this->csrf->isValid($token);
+    }
+
+    /**
+     * Create/generate a new token and return it (new validation is required)
+     * @return string
+     */
+    public function createToken(): string
+    {
+        return $this->csrf->createToken();
+    }
+    
+    /**
      * Shortcut to all the class Fields methods
      * @param  string $fieldName
      * @param  array $args
@@ -66,16 +84,4 @@ class Builder
     {
         return call_user_func_array([$this->form, $fieldName], $args);
     }
-
-    /*
-    public function __call($a, $b)
-    {
-        if (method_exists($this->form, $a)) {
-            return call_user_func_array([$this->form, $a], $b);
-        } else {
-            throw new BadMethodCallException("The method \"{$a}\" does not exist in the class \"" .
-                get_class($this->form) . "\".", 1);
-        }
-    }
-     */
 }

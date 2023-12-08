@@ -2,6 +2,7 @@
 /**
  * @var string  $dir (Access from index or cli)
  */
+
 require_once(realpath(dirname(__FILE__) . '/')."/Pollyfill/functions.php");
 require_once("{$dir}vendor/autoload.php");
 

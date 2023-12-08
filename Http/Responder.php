@@ -8,6 +8,7 @@ use MaplePHP\DTO\Traverse;
 
 class Responder
 {
+    private $container;
     private $response;
     private $json;
 
@@ -16,8 +17,9 @@ class Responder
      * @param ResponseInterface  $response
      * @param Json               $json
      */
-    public function __construct(ResponseInterface $response, Json $json)
+    public function __construct(ContainerInterface $container, ResponseInterface $response, Json $json)
     {
+        $this->container = $container;
         $this->response = $response;
         $this->json = $json;
     }
@@ -80,15 +82,21 @@ class Responder
      */
     public function error(?string $textA, ?string $textB = null): self
     {
+        $this->message($textA, $textB);
         $this->json->add("status", 2);
-        if (is_null($textB)) {
-            $this->json->add("message", $textA);
-        } else {
-            if (!is_null($textA)) {
-                $this->json->add("headline", $textA);
-            }
-            $this->json->add("message", $textB);
-        }
+        return $this;
+    }
+
+    /**
+     * CSRF token error 
+     * @param  string $token New csrf token
+     * @return self
+     */
+    public function csrfTokenError(string $token)
+    {
+        $this->json->add("status", 2);
+        $this->json->add("csrfToken", $token);
+        $this->message($this->container->local("validate")->get("formHibernate", "The form has gone into hibernation. Click send again."));
         return $this;
     }
 
