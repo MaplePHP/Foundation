@@ -5,6 +5,7 @@ namespace MaplePHP\Foundation\Http;
 use MaplePHP\Container\Interfaces\ContainerInterface;
 use MaplePHP\Http\Interfaces\UrlInterface;
 use MaplePHP\Http\Interfaces\DirInterface;
+use MaplePHP\Container\EventHandler;
 use MaplePHP\DTO\Format\DateTime;
 use MaplePHP\DTO\Format\Str;
 use MaplePHP\DTO\Format\Local;
@@ -24,13 +25,15 @@ class Provider
         Dir $dirHandler
     ) {
         // Construct all services that should be autoloaded.
-        self::$container = $container;
-        self::$container->set("url", $url);
-        self::$container->set("dir", $dir);
-        $url->setHandler($urlHandler);
-        $dir->setHandler($dirHandler);
-        $this->getConfProviders();
-        $this->getBuiltFactories();
+        if(is_null(self::$container)) {
+            self::$container = $container;
+            self::$container->set("url", $url);
+            self::$container->set("dir", $dir);
+            $url->setHandler($urlHandler);
+            $dir->setHandler($dirHandler);
+            $this->getConfProviders();
+            $this->getBuiltFactories();
+        }
     }
 
     /**
@@ -76,6 +79,18 @@ class Provider
     {
         $arr = ($_ENV['PROVIDERS_SERVICES'] ?? []);
         if(is_array($arr)) foreach($arr as $name => $class) {
+
+            if(is_array($class)) {
+                $event = new EventHandler();
+                foreach($class['handlers'] as $handler => $methods) {
+                    $event->addHandler($handler, $methods);
+                }
+                foreach($class['events'] as $handler) {
+                    $event->addEvent($handler);
+                }
+                $class = $event;
+            }
+
             self::$container->set($name, $class);
         }
     }
