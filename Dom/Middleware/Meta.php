@@ -59,6 +59,6 @@ class Meta implements MiddlewareInterface
     {
         // Set the config here in before just to make sure it is already set in the services and controllers
         $this->provider->foot()->getElement("config")
-        ->setValue("const NONCE = '" . $this->provider->env("NONCE") . "', CONFIG = " . $this->json->encode());
+        ->setValue("const CONFIG = " . $this->json->encode());
     }
 }
