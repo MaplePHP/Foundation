@@ -2,6 +2,8 @@
 
 namespace MaplePHP\Foundation\Http;
 
+use MaplePHP\Http\Interfaces\ResponseInterface;
+use MaplePHP\Http\Interfaces\RequestInterface;
 use MaplePHP\Container\Interfaces\ContainerInterface;
 use MaplePHP\Http\Interfaces\UrlInterface;
 use MaplePHP\Http\Interfaces\DirInterface;
@@ -19,6 +21,8 @@ class Provider
 
     public function __construct(
         ContainerInterface $container,
+        ResponseInterface $response,
+        RequestInterface $request,
         UrlInterface $url,
         DirInterface $dir,
         Url $urlHandler,
@@ -27,10 +31,15 @@ class Provider
         // Construct all services that should be autoloaded.
         if(is_null(self::$container)) {
             self::$container = $container;
+
             self::$container->set("url", $url);
             self::$container->set("dir", $dir);
+            self::$container->set("response", $response);
+            self::$container->set("request", $request);
+
             $url->setHandler($urlHandler);
             $dir->setHandler($dirHandler);
+            
             $this->getConfProviders();
             $this->getBuiltFactories();
         }
