@@ -83,7 +83,7 @@ class App extends AppConfigs
 
             //$response, $request
             $this->dispatcher->get("/", function () {
-                $this->container->get("view")->setPartial("breadcrumb", [
+                $this->container->get("view")->setPartial("main.!ingress|breadcrumb", [
                     "tagline" => "Welcome to MaplePHP",
                     "name" => "Install the application",
                     "content" => "You need to first install the application in order to use it. Execute the command bellow in you command line:<br><strong>php cli config install --type=app</strong>"
