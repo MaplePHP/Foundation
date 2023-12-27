@@ -80,7 +80,7 @@ class App extends AppConfigs
             $put['config']['routers']['load'] = ["cli"];
             unset($put['config']['mysql']);
             $env->putenvArray($this->attr + $put);
-
+            
             //$response, $request
             $this->dispatcher->get("/", function () {
                 $this->container->get("view")->setPartial("main.!ingress|breadcrumb", [
