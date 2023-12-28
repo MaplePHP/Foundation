@@ -9,15 +9,13 @@ use Whoops\Handler\HandlerInterface;
 
 class AppConfigs
 {
-    /*
-    // Deprecated
+    // Defualt configs
     public const CONFIG_FILES = [
-        "app",
         "database",
         "providers",
         "routers"
     ];
-     */
+
 
     protected $dir;
     protected $attr = array();
@@ -70,10 +68,12 @@ class AppConfigs
     protected function getConfigFileData(): array
     {
         $data = $this->requireConfigFile("app");
-        if(isset($data['configs'])) {
-            foreach($data['configs'] as $file) {
-                $data += $this->requireConfigFile($file);
-            }
+        if(empty($data['configs']) || !is_array($data['configs'])) {
+            $data['configs'] = self::CONFIG_FILES;
+        }
+
+        foreach($data['configs'] as $file) {
+            $data += $this->requireConfigFile($file);
         }
 
         return ["config" => $data];
