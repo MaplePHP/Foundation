@@ -9,12 +9,15 @@ use Whoops\Handler\HandlerInterface;
 
 class AppConfigs
 {
+    /*
+    // Deprecated
     public const CONFIG_FILES = [
         "app",
         "database",
         "providers",
         "routers"
     ];
+     */
 
     protected $dir;
     protected $attr = array();
@@ -60,16 +63,38 @@ class AppConfigs
         return $this->dir->getRoot() . $dirPath;
     }
 
+    /**
+     * Build the config data array
+     * @return array
+     */
     protected function getConfigFileData(): array
     {
-        $new = array();
-        foreach ($this::CONFIG_FILES as $file) {
-            $data = require_once($this->dir->getRoot() . "config/{$file}.php");
-            if (is_array($data)) {
-                $new += $data;
+        $data = $this->requireConfigFile("app");
+        if(isset($data['configs'])) {
+            foreach($data['configs'] as $file) {
+                $data += $this->requireConfigFile($file);
             }
         }
-        return ["config" => $new];
+
+        return ["config" => $data];
+    }
+
+    /**
+     * Requires whitelisted config files
+     * @param  string $file filename without ending
+     * @return array
+     */
+    final protected function requireConfigFile(string $file): array
+    {
+        $fullFilePath = realpath($this->dir->getRoot() . "config/{$file}.php");
+        if(!is_file($fullFilePath)) {
+            throw new \Exception("Could not find the \"{$file}\" in the \"config\" directory.", 1);
+        }
+        $data = require_once($fullFilePath);
+        if (!is_array($data)) {
+            throw new \Exception("The config file named \"{$file}\" has to return an array!", 1);
+        }
+        return $data;
     }
 
     /**
@@ -97,7 +122,7 @@ class AppConfigs
     }
 
     /**
-     * Add some custom configs from other places that the .env and self::CONFIG_FILES files
+     * Add some custom configs from other places that the .env and config files
      * @param array $attr
      */
     public function setConfigs(array $attr): void

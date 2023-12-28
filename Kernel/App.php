@@ -63,7 +63,6 @@ class App extends AppConfigs
     {
         // LOAD env from the .env file first.
         $file = $this->dir->getRoot() . ".env";
-
         $this->attr['NONCE'] = bin2hex(random_bytes(16));
         $this->attr['APP_DIR'] = $this->dir->getRoot();
         //$this->container->set("nonce", $this->attr);
@@ -83,11 +82,18 @@ class App extends AppConfigs
             
             //$response, $request
             $this->dispatcher->get("/", function () {
-                $this->container->get("view")->setPartial("main.!ingress|breadcrumb", [
-                    "tagline" => "Welcome to MaplePHP",
-                    "name" => "Install the application",
-                    "content" => "You need to first install the application in order to use it. Execute the command bellow in you command line:<br><strong>php cli config install --type=app</strong>"
-                ]);
+                $this->container->get("view")->setIndex(function() {
+                    $out = "";
+                    $out .= "<article style=\"padding: 10% 30px;\">";
+                    $out .= "<section style=\"max-width: 600px; margin: 0 auto; text-align: center;\">";
+                    $out .= "<h6 style=\"margin:0 0 5px 0; font-size: 1.4rem; letter-spacing: 2px; text-transform: uppercase; line-height: 1.2em; font-weight: bold;\">Welcome to MaplePHP</h6>";
+                    $out .= "<h1 style=\"margin:0 0 10px 0; font-size: 4.4rem; line-height: 1.2em; font-weight: bold;\">Install the application</h1>";
+                    $out .= "<p style=\"font-size: 1.8rem; line-height: 1.6em;\">You need to first install the application in order to use it. Execute the command bellow in you command line:</p>";
+                    $out .= "<pre style=\"font-size: 1.4rem; line-height: 1.6em; padding: 10px; background: #F1F1F1;\">php cli config install --type=app</pre>";
+                    $out .= "</section>";
+                    $out .= "</article>";
+                    echo sprintf($this->htmlDocPlaceholder(), $out);
+                });
             });
         }
 
@@ -340,5 +346,21 @@ class App extends AppConfigs
         // If you set a buffered response string it will get priorities agains all outher response
         $this->emitter->outputBuffer($this->dispatcher->getBufferedResponse());
         $this->emitter->run($response, $request);
+    }
+
+
+    private function htmlDocPlaceholder(): string
+    {
+        return '<!DOCTYPE html>
+        <html lang="en" style="font-size: 10px;">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Document</title>
+        </head>
+        <body style="margin:0; font-family: Arial, sans-serif; line-height: 150%%;">
+            %s
+        </body>
+        </html>';
     }
 }

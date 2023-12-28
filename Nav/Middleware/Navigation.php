@@ -5,17 +5,17 @@ namespace MaplePHP\Foundation\Nav\Middleware;
 use MaplePHP\Http\Interfaces\ResponseInterface;
 use MaplePHP\Http\Interfaces\RequestInterface;
 use MaplePHP\Handler\Interfaces\MiddlewareInterface;
-use MaplePHP\Container\Interfaces\ContainerInterface;
+use MaplePHP\Foundation\Http\Provider;
 use MaplePHP\Foundation\Nav\Navbar;
 
 class Navigation implements MiddlewareInterface
 {
-    private $container;
-    private $nav;
+    protected $provider;
+    protected $nav;
 
-    public function __construct(ContainerInterface $container, Navbar $nav)
+    public function __construct(Provider $provider, Navbar $nav)
     {
-        $this->container = $container;
+        $this->provider = $provider;
         $this->nav = $nav;
     }
 
@@ -28,9 +28,11 @@ class Navigation implements MiddlewareInterface
     public function before(ResponseInterface $response, RequestInterface $request)
     {
         // Set navigate view partial
-        $this->container->get("view")->setPartial("navigation", [
+        $this->provider->view()->setPartial("navigation", [
             "nav" => $this->nav->get()
         ]);
+
+        return $response;
     }
 
     /**

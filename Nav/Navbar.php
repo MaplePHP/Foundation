@@ -9,62 +9,45 @@ use InvalidArgumentException;
 
 class Navbar
 {
-    public const ITEMS = [
-        [
-            "name" => "Start",
-            "slug" => "",
-            "parent" => 0,
-            "title" => false,
-            "description" => "Lorem ipsum dolor"
-        ],
-        [
-            "name" => "About",
-            "slug" => "about",
-            "parent" => 0,
-            "title" => "About us",
-            "description" => "Lorem ipsum dolor"
-        ],
-        [
-            "name" => "Contact",
-            "slug" => "contact",
-            "parent" => 0,
-            "title" => "Contact us",
-            "description" => "Lorem ipsum dolor"
-        ],
-        /*
-        [
-            "name" => "Login",
-            "slug" => "login",
-            "parent" => 0,
-            "title" => "Login",
-            "description" => "Lorem ipsum dolor"
-        ]
-         */
-    ];
-
     private $builder;
     private $items = array();
+    private $envItems = array();
     private $protocol;
     private $provider;
 
     public function __construct(Provider $provider)
     {
         $this->provider = $provider;
+        if(isset($_ENV['NAVIGATION_MAIN']) && is_array($_ENV['NAVIGATION_MAIN'])) {
+            $this->envItems = $_ENV['NAVIGATION_MAIN'];
+        }
     }
 
     /**
      * Add item to nav
      * @param array $arr
+     * @return self
      */
-    public function addItem(array $arr): void
+    public function add(array $arr): self
+    {
+        return $this->addItem($arr);
+    }
+
+    /**
+     * Add item to nav
+     * @param array $arr
+     * @return self
+     */
+    public function addItem(array $arr): self
     {
         if (empty($arr['name'])) {
             throw new InvalidArgumentException("Error Navbar::addItem array item name is missing!", 1);
         }
-        if (empty($arr['slug'])) {
+        if (!isset($arr['slug'])) {
             throw new InvalidArgumentException("Error Navbar::addItem array item slug is missing!", 1);
         }
         $this->items[] = $arr;
+        return $this;
     }
 
     /**
@@ -74,11 +57,20 @@ class Navbar
     private function items(): array
     {
         $items = array();
-        $arr = array_merge($this->items, $this::ITEMS);
+
+        $arr = $this->items;
+        if(count($this->items) === 0) {
+            $arr = array_merge($arr, $this->envItems);
+        }
+        
         foreach ($arr as $key => $item) {
             //$pos = ($item['position'] ?? 0);
             $key = (int)$key;
-            $items[($item['parent'] ?? 0)][($key + 1)] = Traverse::value($item);
+            $id = (isset($item['id'])) ? (int)$item['id'] : ($key + 1);
+            if($id <= 0) {
+                throw new \Exception("The navigation item \"id\" has to be a integer and more than \"0\".", 1);
+            }
+            $items[($item['parent'] ?? 0)][$id] = Traverse::value($item);
         }
         return $items;
     }
@@ -94,16 +86,12 @@ class Navbar
             "ul",
             "li",
             function ($obj, $li, $active, $level, $id, $parent) {
-                //$uri = $obj->uri;
-
-                //$activeParent = $obj->activeParent($uriArr);
                 $hasChild = ($obj->hasChild ? " has-child" : "");
                 $topItem = ($parent === 0) ? " top-item" : "";
                 $li->attr("class", "item{$hasChild}{$topItem}{$active}");
 
                 // Create link
                 $li->create("a", $obj->name)
-                ->attr("title", "Besök sidan")
                 ->attr("href", $this->provider->url()->getRoot($obj->uri))
                 ->attr("class", "item item-{$id}{$active}");
             }
