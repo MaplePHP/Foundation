@@ -28,6 +28,18 @@ class Meta implements MiddlewareInterface
      */
     public function before(ResponseInterface $response, RequestInterface $request)
     {
+        
+    }
+
+    /**
+     * After controllers
+     * @param  ResponseInterface $response
+     * @param  RequestInterface  $request
+     * @return void
+     */
+    public function after(ResponseInterface $response, RequestInterface $request)
+    {
+
         $activeResult = false;
         $myAppName = $this->provider->env("APP_NAME", "My App");
         if ($this->provider->has("protocol")) {
@@ -47,16 +59,7 @@ class Meta implements MiddlewareInterface
         $this->provider->set("foot", Document::dom("foot"));
         $dom = $this->provider->foot();
         $dom->bindTag("script", "config")->attr("nonce", $this->provider->env("NONCE"));
-    }
-
-    /**
-     * After controllers
-     * @param  ResponseInterface $response
-     * @param  RequestInterface  $request
-     * @return void
-     */
-    public function after(ResponseInterface $response, RequestInterface $request)
-    {
+        
         // Set the config here in before just to make sure it is already set in the services and controllers
         $this->provider->foot()->getElement("config")
         ->setValue("const CONFIG = " . $this->json->encode());

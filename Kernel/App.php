@@ -73,6 +73,7 @@ class App extends AppConfigs
             $env->loadEnvFile($file);
             $env->putenvArray($this->attr + $this->getConfigFileData());
             $this->attr += $env->getData();
+
         } else {
             // Create installation screen
             $put = $this->getConfigFileData();

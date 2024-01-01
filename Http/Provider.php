@@ -59,6 +59,15 @@ class Provider
         });
 
         self::$container->set("env", function (string $key, string $fallback = "") {
+
+
+            /*
+            if(is_array($key)) {
+               $keyA = strtoupper($key[0] ?? "");
+               $keyB = strtoupper($key[1] ?? "");
+               $key = "{$keyA}_{$keyB}"
+            }
+             */
             $value = (getenv($key) !== false) ? (string)getenv($key) : $fallback;
             return new Str($value);
         });

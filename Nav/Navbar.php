@@ -14,23 +14,36 @@ class Navbar
     private $envItems = array();
     private $protocol;
     private $provider;
+    private $config = [
+        "maxLevel" => 0,
+        "nestingSlug" => false,
+        "where" => []
+    ];
 
     public function __construct(Provider $provider)
     {
         $this->provider = $provider;
-        if(isset($_ENV['NAVIGATION_MAIN']) && is_array($_ENV['NAVIGATION_MAIN'])) {
-            $this->envItems = $_ENV['NAVIGATION_MAIN'];
+
+        if(isset($_ENV['NAVIGATION_CONFIG']) && is_array($_ENV['NAVIGATION_CONFIG'])) {
+            $this->config = $_ENV['NAVIGATION_CONFIG'];
+        }
+
+        if(isset($_ENV['NAVIGATION_DATA']) && is_array($_ENV['NAVIGATION_DATA'])) {
+            $this->envItems = $_ENV['NAVIGATION_DATA'];
         }
     }
 
     /**
-     * Add item to nav
-     * @param array $arr
-     * @return self
+     * Overwrite configs
+     * @param string $key   Config key
+     * @param mixed  $value Config value
      */
-    public function add(array $arr): self
-    {
-        return $this->addItem($arr);
+    public function setConfig(string $key, mixed $value) {
+        if(empty($this->config[key])) {
+            $configs = array_keys($this->config);
+            throw new InvalidArgumentException("Config {$key} does not exists, choose from (".implode(", ", $configs).").", 1);
+        }
+        $this->config[$key] = $value;
     }
 
     /**
@@ -38,7 +51,17 @@ class Navbar
      * @param array $arr
      * @return self
      */
-    public function addItem(array $arr): self
+    public function add(string $navName, array $arr): self
+    {
+        return $this->addItem($navName, $arr);
+    }
+
+    /**
+     * Add navigation item to a menu
+     * @param string $navName   Select which navgation you want to add item to ("main" is defualt!)
+     * @param array  $arr       Navigation item data
+     */
+    public function addItem(string $navName, array $arr): self
     {
         if (empty($arr['name'])) {
             throw new InvalidArgumentException("Error Navbar::addItem array item name is missing!", 1);
@@ -46,7 +69,7 @@ class Navbar
         if (!isset($arr['slug'])) {
             throw new InvalidArgumentException("Error Navbar::addItem array item slug is missing!", 1);
         }
-        $this->items[] = $arr;
+        $this->items[$navName][] = $arr;
         return $this;
     }
 
@@ -57,20 +80,19 @@ class Navbar
     private function items(): array
     {
         $items = array();
-
-        $arr = $this->items;
-        if(count($this->items) === 0) {
-            $arr = array_merge($arr, $this->envItems);
-        }
+        $arr = array_merge($this->envItems, $this->items);
         
-        foreach ($arr as $key => $item) {
-            //$pos = ($item['position'] ?? 0);
-            $key = (int)$key;
-            $id = (isset($item['id'])) ? (int)$item['id'] : ($key + 1);
-            if($id <= 0) {
-                throw new \Exception("The navigation item \"id\" has to be a integer and more than \"0\".", 1);
+        foreach ($arr as $menuID => $data) {
+            foreach ($data as $key => $item) {
+                //$pos = ($item['position'] ?? 0);
+                $key = (int)$key;
+                $id = (isset($item['id'])) ? (int)$item['id'] : ($key + 1);
+                if($id <= 0) {
+                    throw new \Exception("The navigation item \"id\" has to be a integer and more than \"0\".", 1);
+                }
+                $items[$menuID][($item['parent'] ?? 0)][$id] = Traverse::value($item);
             }
-            $items[($item['parent'] ?? 0)][$id] = Traverse::value($item);
+
         }
         return $items;
     }
@@ -107,7 +129,13 @@ class Navbar
         if (is_null($this->builder)) {
             // Build the navigation structure
             $this->builder = new Builder($this->items());
-            $this->builder->build(function ($obj) {
+
+            // Configs
+            $this->builder->setLevel((int)($this->config['maxLevel'] ?? 0));
+            $this->builder->nestingSlug(!empty($this->config['nestingSlug']));
+            $this->builder->setWhere((isset($this->config['where']) && is_array($this->config['where']) ? $this->config['where'] : []));
+
+            $this->builder->setMultiple(true)->build(function ($obj) {
                 return $obj->slug;
             });
 

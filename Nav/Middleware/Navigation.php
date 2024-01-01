@@ -28,7 +28,7 @@ class Navigation implements MiddlewareInterface
     public function before(ResponseInterface $response, RequestInterface $request)
     {
         // Set navigate view partial
-        $this->provider->view()->setPartial("navigation", [
+        $this->provider->view()->setPartial("navigation.!document/navigation|!navigation", [
             "nav" => $this->nav->get()
         ]);
 
