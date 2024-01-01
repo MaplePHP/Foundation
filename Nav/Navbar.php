@@ -28,6 +28,12 @@ class Navbar
             $this->config = $_ENV['NAVIGATION_CONFIG'];
         }
 
+        // Fallback on possible single config nav
+        if (isset($_ENV['NAVIGATION_MAIN'])) {
+            $this->envItems = ["main" => $_ENV['NAVIGATION_MAIN']];
+        }
+
+        // Multiple config nav
         if(isset($_ENV['NAVIGATION_DATA']) && is_array($_ENV['NAVIGATION_DATA'])) {
             $this->envItems = $_ENV['NAVIGATION_DATA'];
         }
