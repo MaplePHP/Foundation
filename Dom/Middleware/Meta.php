@@ -6,7 +6,7 @@ use MaplePHP\Http\Interfaces\ResponseInterface;
 use MaplePHP\Http\Interfaces\RequestInterface;
 use MaplePHP\Handler\Interfaces\MiddlewareInterface;
 use MaplePHP\Output\Dom\Document;
-use MaplePHP\Output\Json;
+use MaplePHP\Foundation\Http\Json;
 use MaplePHP\Foundation\Http\Provider;
 
 class Meta implements MiddlewareInterface

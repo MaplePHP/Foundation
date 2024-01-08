@@ -5,7 +5,7 @@ namespace MaplePHP\Foundation\Form;
 use MaplePHP\Container\Interfaces\ContainerInterface;
 use MaplePHP\Http\Interfaces\ServerRequestInterface;
 use MaplePHP\Foundation\Security\Csrf;
-use MaplePHP\Output\Json;
+use MaplePHP\Foundation\Http\Json;
 use MaplePHP\Form\Validate as valid;
 use MaplePHP\Foundation\Form\Builder;
 use MaplePHP\Foundation\Form\Forms\AbstractForm;

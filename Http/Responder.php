@@ -4,7 +4,7 @@ namespace MaplePHP\Foundation\Http;
 
 use MaplePHP\Container\Interfaces\ContainerInterface;
 use MaplePHP\Http\Interfaces\ResponseInterface;
-use MaplePHP\Output\Json;
+use MaplePHP\Foundation\Http\Json;
 use MaplePHP\DTO\Traverse;
 
 class Responder
