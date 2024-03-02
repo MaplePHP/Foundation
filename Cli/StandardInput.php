@@ -4,12 +4,14 @@ namespace MaplePHP\Foundation\Cli;
 
 use MaplePHP\Http\Interfaces\ResponseInterface;
 use MaplePHP\Http\Stream;
+use MaplePHP\Http\Client;
+use MaplePHP\Http\Request;
 use MaplePHP\Http\UploadedFile;
 use MaplePHP\Validate\Inp;
 use Exception;
 
 /**
- * Is used to install dkim packages to extend MaplePHP functionallity
+ * Is used to make the development process so much easier.
  * @psalm-suppress ForbiddenCode
  */
 class StandardInput
@@ -25,6 +27,12 @@ class StandardInput
         $this->response = $response;
     }
 
+    /**
+     * CLi confirmation
+     * @param  string   $message
+     * @param  callable $call 
+     * @return void
+     */
     public function confirm(string $message, callable $call)
     {
         $this->write($message);
@@ -54,7 +62,7 @@ class StandardInput
         if ($response) {
             $this->write($response);
         }
-        return ($getLine ? $getLine : $default);
+        return ($getLine !== "" ? $getLine : $default);
     }
 
     /**
@@ -138,6 +146,14 @@ class StandardInput
         return $line;
     }
 
+
+    /**
+     * Validate input before continue
+     * @param  string $value Input value
+     * @param  string $valid A validation method from Maple Validate class
+     * @param  array  $args  Possible validate arguments to pass to the validation class
+     * @return bool
+     */
     protected function validate(string $value, ?string $valid = "required", array $args = [])
     {
         if(is_null($valid)) {
@@ -151,6 +167,11 @@ class StandardInput
     }
 
 
+    /**
+     * Dispatch cli
+     * @param  array  $data
+     * @return null|string
+     */
     public function dispatcher(array $data): ?string
     {
         $value = null;
@@ -189,6 +210,12 @@ class StandardInput
         $this->stream->write($message);
     }
 
+    /**
+     * Create file with stream
+     * @param  string $content
+     * @param  string $file
+     * @return void
+     */
     public function createFile(string $content, string $file)
     {
         $envStream = new Stream(Stream::TEMP);
@@ -197,12 +224,21 @@ class StandardInput
         $upload->moveTo($file);
     }
 
+    /**
+     * Read file from stream
+     * @param  string $file
+     * @return string
+     */
     public function readFile(string $file): string
     {
         $stream = new Stream($file);
         return $stream->getContents();
     }
 
+    /**
+     * Get json from stream 
+     * @param string $file
+     */
     public function setJsonFileStream(string $file)
     {
         if (is_null($this->jsonFileStream)) {
@@ -216,6 +252,78 @@ class StandardInput
         return $this->jsonFileStream;
     }
 
+    /**
+     * Extract Remote IP with help of shell_exec and curl
+     * Cli command do not have access to remote IP, so this is a next best solution.
+     * This is just a lossy function and will just try to fetch remote IP remote.
+     * Does the script take more than 3 sec then it will abort
+     * WARNING: Built to wokr with CLI and not server
+     * @return string|false
+     */
+    function lossyGetPublicIP(): string|false
+    {
+        if (extension_loaded('curl')) {
+            $client = new Client([
+                CURLOPT_CONNECTTIMEOUT => 0,
+                CURLOPT_TIMEOUT => 3
+            ]);
+            $request = new Request("GET", "http://ipecho.net/plain");
+            $response = $client->sendRequest($request);
+            $publicIP = $response->getBody()->getContents();
+            if (filter_var($publicIP, FILTER_VALIDATE_IP)) {
+                return $publicIP;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Will help cli promp to get a lossy idea what kind of root directory it has
+     * It is not 100% accurate! function is just used to make the install process more pedagogical!
+     * WARNING: Built to wokr with CLI and not server
+     * @param  string $fullDirPath E.g. '/var/www/html/dir1/dir2'
+     * @return string|false
+     */
+    function lossyGetRelativePath($fullDirPath): string|false
+    {
+        $checkDirs = [
+            '/var/www/html', 
+            '/Library/WebServer/Documents', 
+            'C:\xampp\htdocs', 
+            '/opt/lampp/htdocs', 
+            '/usr/share/nginx/html', 
+            'C:\nginx\html'
+        ];
+        foreach($checkDirs as $basePath) {
+            if(strpos($fullDirPath, $basePath) === 0) {
+                return substr($fullDirPath, strlen($basePath));
+            }
+        }
+        return "";
+    }
+
+
+    /**
+     * Lossy get local ip E.g. 127.0.0.1 or 127.0.1.1
+     * WARNING: Built to wokr with CLI and not server
+     * @return string
+     */
+    function lossyGetLocalIP(): string
+    {
+        $serverIP = "";
+        $host = gethostname();
+        if(is_string($host)) {
+            $serverIP = gethostbyname($host);
+        }
+        if(strlen($serverIP) === 0) {
+            $serverIP = "127.0.0.1";
+        }
+        return $serverIP;
+    }
+
+    /**
+     * Get json data
+     */
     public function getJsonData()
     {
         return $this->jsonFileStream;
@@ -255,6 +363,12 @@ class StandardInput
         return (array)$_ENV['config'];
     }
 
+    /**
+     * Create prompt
+     * @param  string|null $prompt
+     * @param  string      $default
+     * @return string
+     */
     protected function prompt(?string $prompt = null, string $default = "Input your value"): string
     {
         $prompt = (is_null($prompt) ? $default : $prompt);

@@ -11,8 +11,6 @@ use MaplePHP\Http\Env;
 use MaplePHP\Container\Reflection;
 use MaplePHP\Foundation\Cli\StandardInput;
 
-
-
 class Config implements CliInterface
 {
     protected $container;
@@ -28,21 +26,19 @@ class Config implements CliInterface
         $this->cli = $cli;
     }
 
+
     public function install()
     {
         $type = ($this->args['type'] ?? null);
         $envConfig = $this->cli->getConfig();
-
         $allowedConfigs = array_keys($envConfig);
         if (isset($envConfig[$type]) && is_array($envConfig[$type])) {
             $data = $envConfig[$type];
             $file = $this->dir->getRoot() . ".env";
             $env = new Env($file);
             foreach ($data as $name => $v) {
-
                 $key = "{$this->args['type']}_{$name}";
-
-                if(is_array($v)) {
+                if (is_array($v)) {
                     $value = (string)$this->cli->dispatcher($v);
                 } else {
                     $value = $this->cli->step(ucfirst($name), ($v ? $v : ""));
@@ -50,17 +46,59 @@ class Config implements CliInterface
                 if (is_null($value) || is_string($value)) {
                     $env->set($key, (string)$value);
                 }
-                
             }
+
             $this->cli->createFile($env->generateOutput(["fileData", "set"]), $file);
-            $this->cli->write("installation completed");
+            $this->cli->write("...");
+            $this->cli->write("Installation completed!");
+            if ($type === "app") {
+                $ssl = $env->get("app_ssl");
+                $public_dir = $env->get("app_public_dir");
+                $public = rtrim(trim($public_dir), "/");
+                $public = ltrim($public, "/");
+
+                $this->cli->write("...");
+                $this->host(((int)$ssl === 1), $public_dir);
+                if ($public !== "public") {
+                    $this->cli->write("\nMake sure to manually rename the public directory to {$public}!");
+                }
+            }
+            $this->cli->write("...");
         } else {
             $this->cli->write("Expecting the argumnet --type=%s, with a valid installation.\nAllowed types: " .
                 implode(", ", $allowedConfigs));
         }
-        
         return $this->cli->getResponse();
     }
+
+    public function host(?bool $hasSSL = null, ?string $public = null)
+    {
+        if (is_null($hasSSL)) {
+            $hasSSL = ((int)($_ENV['APP_SSL'] ?? 1) === 1);
+        }
+
+        if (is_null($public)) {
+            $public = (empty($public)) ? (empty($_ENV['APP_PUBLIC_DIR']) ? "public" : $_ENV['APP_PUBLIC_DIR']) : $public;
+        }
+
+        $schema = ($hasSSL) ? "https://" : "http://";
+        $public = rtrim($public, "/")."/";
+
+        $expectedHost = "localhost";
+        $expectedDIR = $this->cli->lossyGetRelativePath($this->dir->getRoot());
+        $expectedLocalIP = $this->cli->lossyGetLocalIP();
+        $expectedRemoteIP = $this->cli->lossyGetPublicIP();
+
+        $h1 = $schema.$expectedHost.$expectedDIR.$public;
+        $h2 = $schema.$expectedLocalIP.$expectedDIR.$public;
+        $h3 = $schema.$expectedRemoteIP.$expectedDIR.$public;
+
+        $this->cli->write("Visit \"possible\" development zone bellow:");
+        $this->cli->write("{$h1}, {$h2}, {$h3}");
+
+        return $this->cli->getResponse();
+    }
+
 
     public function read()
     {
