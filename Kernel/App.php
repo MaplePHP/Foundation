@@ -307,11 +307,12 @@ class App extends AppConfigs
         $this->setupDispatch(function ($response) {
             return $this->setupHeaders($response);
         });
-
+        
         $response = $this->dispatcher->response();
         $request = $this->dispatcher->request();
 
-        if ((int)getenv("APP_SSL") === 1 && !$request->isSSL()) {
+        // Will force https address.
+        if ((int)getenv("APP_FORCE_SSL") === 1 && !$request->isSSL()) {
             $location = $request->getUri()->withScheme("https")->withQuery("")->withPort(null)->getUri();
             $response->withStatus(301)->location($location);
         }

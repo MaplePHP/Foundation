@@ -24,12 +24,19 @@ class Kernel
 
     public function __construct(string $dir)
     {
-
         $this->dir = $dir;
-
         $this->stream = new Http\Stream(Http\Stream::TEMP);
         $this->response = new Http\Response($this->stream);
         $this->env = new Http\Environment();
+        $this->request = new Http\ServerRequest(new Http\Uri($this->env->getUriParts([
+            "dir" => $this->dir
+        ])), $this->env);
+
+        $this->init();
+    }
+
+    public function getRequest() {
+        return $this->request;
     }
 
     private function init(): void
@@ -40,27 +47,24 @@ class Kernel
         $this->app = new App($this->emitter, $this->routes);
     }
     
-    public function run(): void
+    public function run(?string $path = null): void
     {
-        $this->request = new Http\ServerRequest(new Http\Uri($this->env->getUriParts([
-            "dir" => $this->dir
-        ])), $this->env);
-
-
-        $this->init();
-
         $this->app->enablePrettyErrorHandler();
         $this->app->setContainer($this->container);
         $this->app->enableTemplateEngine(true);
         $this->app->excludeRouterFiles(["cli"]);
-
         //$this->emitter->errorHandler(false, false, true, "{$dir}storage/logs/error.log");
         // bool $displayError, bool $niceError, bool $logError, string $logErrorFile
         //$this->emitter->errorHandler(true, true, true, "{$dir}storage/logs/error.log");
 
         // Set current URI path
-        $param = $this->request->getQueryParams();
-        $this->routes->setDispatchPath("/" . ($param['page'] ?? ""));
+        //$param = $this->request->getQueryParams();
+        //$path = ($param['page'] ?? "");
+        if(is_null($path)) {
+            $path = $this->request->getUri()->getPath();
+        }
+
+        $this->routes->setDispatchPath($path);
         $this->app->run();
 
     }

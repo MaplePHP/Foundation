@@ -10,9 +10,12 @@ use MaplePHP\Foundation\Security\Session;
 
 class SessionStart implements MiddlewareInterface
 {
-    //private $url;
+    const NAME = NULL; // Set a custom seesion name
+    const TIME = 360;
+    const SSL = true;
+    const SAMESITE = true;
+
     private $container;
-    //private $json;
 
     public function __construct(RequestInterface $request, ContainerInterface $container)
     {
@@ -28,13 +31,16 @@ class SessionStart implements MiddlewareInterface
      */
     public function before(ResponseInterface $response, RequestInterface $request)
     {
+        $time = (getenv("SESSION_TIME") !== false) ? (int)getenv("SESSION_TIME") : static::TIME;
+        $SSL = (getenv("SESSION_SSL") !== false) ? ((int)getenv("SESSION_SSL") === 1) : static::SSL;
+
         $session = new Session(
-            "maple",
-            (int)getenv("SESSION_TIME"),
+            static::NAME,
+            $time,
             "/",
             $request->getUri()->getHost(),
-            ((int)getenv("SESSION_SSL") === 1),
-            true
+            $SSL,
+            static::SAMESITE
         );
         $this->container->set("session", $session);
         $this->container->get("session")->start();

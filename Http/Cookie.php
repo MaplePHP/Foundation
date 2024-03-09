@@ -8,6 +8,10 @@ use BadMethodCallException;
 
 class Cookie
 {
+
+    const SAMESITE = "Strict";
+    const HTTPONLY = true;
+
     private $url;
     private $cookies;
 
@@ -19,10 +23,10 @@ class Cookie
     public function __construct(UrlInterface $url)
     {
         $this->url = $url;
-        //path, domain, secure, httponly
-        $this->cookies = new Cookies("/", $this->url->getUri()->getHost(), true, true);
+        $scheme = $this->url->getUri()->getScheme();
+        $this->cookies = new Cookies("/", $this->url->getUri()->getHost(), ($scheme === "https"), static::HTTPONLY);
         // Only read modify on same site
-        $this->cookies->setSameSite("Strict");
+        $this->cookies->setSameSite(static::SAMESITE);
     }
 
     public function inst()

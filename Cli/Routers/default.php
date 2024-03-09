@@ -44,6 +44,15 @@ $routes->group("config", function ($routes) {
     $routes->cli("/drop", ['MaplePHP\Foundation\Cli\Connectors\Config', "drop"]);
 });
 
+$routes->group("server", function ($routes) {
+    // It is recommended to add this 2 handles at the begining of every grouped call
+    $routes->map("*", '[/{any:.*}]', ['MaplePHP\Foundation\Cli\Connectors\Cli', "handleMissingType"]);
+    $routes->cli("[/help]", ['MaplePHP\Foundation\Cli\Connectors\Server', "help"]);
+
+    $routes->cli("/start", ['MaplePHP\Foundation\Cli\Connectors\Server', "start"]);
+});
+
+
 
 $routes->group("image", function ($routes) {
     // It is recommended to add this 2 handles at the begining of every grouped call

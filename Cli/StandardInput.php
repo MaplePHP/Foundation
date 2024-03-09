@@ -7,6 +7,7 @@ use MaplePHP\Http\Stream;
 use MaplePHP\Http\Client;
 use MaplePHP\Http\Request;
 use MaplePHP\Http\UploadedFile;
+use MaplePHP\DTO\Format\Str;
 use MaplePHP\Validate\Inp;
 use Exception;
 
@@ -320,6 +321,32 @@ class StandardInput
         }
         return $serverIP;
     }
+
+    function getLocalIPAddress(): string|false
+    {
+        $result = false;
+        $os = strtolower(PHP_OS);
+
+        if(strpos($os, 'win') !== false) {
+            $ipconfig = shell_exec('ipconfig');
+            preg_match('/IPv4 Address[. ]*: ([\d\.]+)/', $ipconfig, $matches);
+            $result = ($matches[1] ?? false);
+
+        } elseif(strpos($os, 'linux') !== false) {
+            $result = shell_exec('hostname -I | cut -d\' \' -f1');
+
+        } elseif(strpos($os, 'darwin') !== false) {
+            $result = shell_exec("ifconfig en0 | grep inet | grep -v inet6 | awk '{print $2}'");
+        }
+
+        if(is_string($result) && !empty($result)) {
+            $format = new Str($result);
+            return $format->clearBreaks()->get();
+        }
+
+        return false;
+    }
+
 
     /**
      * Get json data
