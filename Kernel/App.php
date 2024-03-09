@@ -43,11 +43,16 @@ class App extends AppConfigs
         $database = $this->getenv("MYSQL_DATABASE");
 
         if ($this->hasDBEngine && is_string($connect) && is_string($database)) {
+
+            $port = (int)$this->getenv("MYSQL_PORT");
+            if($port === 0) $port = 3306;
+
             $connect = new Connect(
                 $connect,
                 $this->getenv("MYSQL_USERNAME"),
                 $this->getenv("MYSQL_PASSWORD"),
-                $database
+                $database,
+                $port,
             );
             $connect->setCharset($this->getenv("MYSQL_CHARSET"));
             $connect->setPrefix($this->getenv("MYSQL_PREFIX"));
