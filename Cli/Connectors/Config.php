@@ -29,6 +29,7 @@ class Config implements CliInterface
 
     public function install()
     {
+        
         $type = ($this->args['type'] ?? null);
         $envConfig = $this->cli->getConfig();
         $allowedConfigs = array_keys($envConfig);
@@ -51,6 +52,7 @@ class Config implements CliInterface
             $this->cli->createFile($env->generateOutput(["fileData", "set"]), $file);
             $this->cli->write("...");
             $this->cli->write("Installation completed!");
+            /*
             if ($type === "app") {
                 $ssl = $env->get("app_ssl");
                 $public_dir = $env->get("app_public_dir");
@@ -63,6 +65,7 @@ class Config implements CliInterface
                     $this->cli->write("\nMake sure to manually rename the public directory to {$public}!");
                 }
             }
+             */
             $this->cli->write("...");
         } else {
             $this->cli->write("Expecting the argumnet --type=%s, with a valid installation.\nAllowed types: " .

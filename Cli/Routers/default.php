@@ -17,12 +17,12 @@
  * @var object $routes
  */
 
-$routes->cli("[help]", ['MaplePHP\Foundation\Cli\Connectors\Cli', "help"]);
+$routes->cli("[/help]", ['MaplePHP\Foundation\Cli\Connectors\Cli', "help"]);
 
 // Group handle is not required, but is a great way to organizing CLI packages->type calls
 
 // Database creation/migration
-$routes->group("migrate", function ($routes) {
+$routes->group("/migrate", function ($routes) {
     // It is recommended to add this handle at the begining of every grouped call
     $routes->map("*", '[/{any:.*}]', ['MaplePHP\Foundation\Cli\Connectors\Cli', "handleMissingType"]);
     $routes->cli("[/help]", ['MaplePHP\Foundation\Cli\Connectors\Migrate', "help"]);
@@ -32,7 +32,7 @@ $routes->group("migrate", function ($routes) {
     $routes->cli("/drop", ['MaplePHP\Foundation\Cli\Connectors\Migrate', "drop"]);
 });
 
-$routes->group("config", function ($routes) {
+$routes->group("/config", function ($routes) {
     // It is recommended to add this 2 handles at the begining of every grouped call
     $routes->map("*", '[/{any:.*}]', ['MaplePHP\Foundation\Cli\Connectors\Cli', "handleMissingType"]);
     $routes->cli("[/help]", ['MaplePHP\Foundation\Cli\Connectors\Config', "help"]);
@@ -44,17 +44,8 @@ $routes->group("config", function ($routes) {
     $routes->cli("/drop", ['MaplePHP\Foundation\Cli\Connectors\Config', "drop"]);
 });
 
-$routes->group("server", function ($routes) {
-    // It is recommended to add this 2 handles at the begining of every grouped call
-    $routes->map("*", '[/{any:.*}]', ['MaplePHP\Foundation\Cli\Connectors\Cli', "handleMissingType"]);
-    $routes->cli("[/help]", ['MaplePHP\Foundation\Cli\Connectors\Server', "help"]);
 
-    $routes->cli("/start", ['MaplePHP\Foundation\Cli\Connectors\Server', "start"]);
-});
-
-
-
-$routes->group("image", function ($routes) {
+$routes->group("/image", function ($routes) {
     // It is recommended to add this 2 handles at the begining of every grouped call
     $routes->map("*", '[/{any:.*}]', ['MaplePHP\Foundation\Cli\Connectors\Cli', "handleMissingType"]);
     $routes->cli("[/help]", ['MaplePHP\Foundation\Cli\Connectors\Image', "help"]);
@@ -62,7 +53,7 @@ $routes->group("image", function ($routes) {
     $routes->cli("/resize", ['MaplePHP\Foundation\Cli\Connectors\Image', "resize"]);
 });
 
-$routes->group("package", function ($routes) {
+$routes->group("/package", function ($routes) {
     // It is recommended to add this 2 handles at the begining of every grouped call
     $routes->map("*", '[/{any:.*}]', ['MaplePHP\Foundation\Cli\Connectors\Cli', "handleMissingType"]);
     $routes->cli("[/help]", ['MaplePHP\Foundation\Cli\Connectors\Package', "help"]);
@@ -77,7 +68,7 @@ $routes->group("package", function ($routes) {
     $routes->cli("/delete", ['MaplePHP\Foundation\Cli\Connectors\Package', "delete"]);
 });
 
-$routes->group("database", function ($routes) {
+$routes->group("/database", function ($routes) {
     // It is recommended to add this 2 handles at the begining of every grouped call
     $routes->map("*", '[/{any:.*}]', ['MaplePHP\Foundation\Cli\Connectors\Cli', "handleMissingType"]);
     $routes->cli("[/help]", ['MaplePHP\Foundation\Cli\Connectors\Database', "help"]);
@@ -87,7 +78,7 @@ $routes->group("database", function ($routes) {
     $routes->cli("/delete", ['MaplePHP\Foundation\Cli\Connectors\Database', "delete"]);
 });
 
-$routes->group("mail", function ($routes) {
+$routes->group("/mail", function ($routes) {
     // It is recommended to add this 2 handles at the begining of every grouped call
     $routes->map("*", '[/{any:.*}]', ['MaplePHP\Foundation\Cli\Connectors\Cli', "handleMissingType"]);
     $routes->cli("[/help]", ['MaplePHP\Foundation\Cli\Connectors\Mail', "help"]);
