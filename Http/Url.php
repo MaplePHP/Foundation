@@ -56,10 +56,7 @@ class Url implements UrlHandlerInterface
      */
     public function getJs(string $path, bool $isProd = false): string
     {
-        if ($isProd) {
-            return $this->getPublic("js/{$path}");
-        }
-        return $this->getResource("js/{$path}");
+        return $this->getPublic("js/{$path}");
     }
 
     /**

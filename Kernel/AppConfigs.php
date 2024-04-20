@@ -58,7 +58,7 @@ class AppConfigs
         if (substr($dirPath, 0, 1) === "/") {
             return $dirPath;
         }
-        return $this->dir->getRoot() . $dirPath;
+        return realpath($this->dir->getRoot($dirPath));
     }
 
     /**
@@ -86,7 +86,7 @@ class AppConfigs
      */
     final protected function requireConfigFile(string $file): array
     {
-        $fullFilePath = realpath($this->dir->getRoot() . "config/{$file}.php");
+        $fullFilePath = realpath($this->dir->getRoot("/config/{$file}.php"));
         if(!is_file($fullFilePath)) {
             throw new \Exception("Could not find the \"{$file}\" in the \"config\" directory.", 1);
         }
