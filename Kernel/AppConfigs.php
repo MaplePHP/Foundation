@@ -86,9 +86,10 @@ class AppConfigs
      */
     final protected function requireConfigFile(string $file): array
     {
-        $fullFilePath = realpath($this->dir->getRoot("/config/{$file}.php"));
-        if(!is_file($fullFilePath)) {
-            throw new \Exception("Could not find the \"{$file}\" in the \"config\" directory.", 1);
+        $expectedPath = $this->dir->getRoot("config/{$file}.php");
+        $fullFilePath = realpath($expectedPath);
+        if(!$fullFilePath || !is_file($fullFilePath)) {
+            throw new \Exception("Could not find the \"{$expectedPath}\" in the \"config\" directory.", 1);
         }
         $data = require_once($fullFilePath);
         if (!is_array($data)) {

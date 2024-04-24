@@ -13,6 +13,7 @@ class Kernel
 {
     
     private $dir;
+    private $rootDir;
     private $stream;
     private $response;
     private $request;
@@ -22,14 +23,16 @@ class Kernel
     private $emitter;
     private $app;
 
-    public function __construct(string $dir)
+    public function __construct(string $dir, ?string $rootDir = null)
     {
         $this->dir = $dir;
+        $this->rootDir = is_null($rootDir) ? $dir : $rootDir;
         $this->stream = new Http\Stream(Http\Stream::TEMP);
         $this->response = new Http\Response($this->stream);
         $this->env = new Http\Environment();
         $this->request = new Http\ServerRequest(new Http\Uri($this->env->getUriParts([
-            "dir" => $this->dir
+            "dir" => $this->dir,
+            "rootDir" => $this->rootDir
         ])), $this->env);
 
         $this->init();
@@ -77,6 +80,7 @@ class Kernel
     {
         $this->request = new Http\ServerRequest(new Http\Uri($this->env->getUriParts([
             "dir" => $this->dir,
+            "rootDir" => $this->rootDir,
             "argv" => $argv
         ])), $this->env);
 

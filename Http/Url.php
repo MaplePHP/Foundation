@@ -14,10 +14,13 @@ class Url implements UrlHandlerInterface
     public function __construct(UrlInterface $url)
     {
         $this->url = $url;
+        
+        /*
         $envDir = getenv("APP_PUBLIC_DIR");
         if (is_string($envDir) && $this->validateDir($envDir)) {
             $this->publicDirPath = ltrim(rtrim($envDir, "/"), "/");
         }
+         */
     }
 
     /**

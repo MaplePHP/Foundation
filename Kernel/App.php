@@ -30,7 +30,10 @@ class App extends AppConfigs
     {
         $this->emitter = $emitter;
         $this->dispatcher = $dispatcher;
-        $this->dir = new Dir($this->dispatcher->request()->getUri()->getDir());
+        $this->dir = new Dir(
+            $this->dispatcher->request()->getUri()->getDir(), 
+            $this->dispatcher->request()->getUri()->getRootDir()
+        );
     }
     
     /**

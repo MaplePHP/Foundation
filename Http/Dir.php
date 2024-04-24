@@ -9,17 +9,19 @@ class Dir implements DirHandlerInterface
 {
 
     private $dir;
-    private $publicDirPath;
+    //private $publicDirPath;
 
     public function __construct(DirInterface $dir)
     {
         $this->dir = $dir;
+
+        /*
         $this->publicDirPath = "public/";
-        
         $envDir = getenv("APP_PUBLIC_DIR");
         if (is_string($envDir) && $this->validateDir($envDir)) {
             $this->publicDirPath = ltrim(rtrim($envDir, "/"), "/")."/";
         }
+         */
     }
 
     /**
@@ -39,7 +41,7 @@ class Dir implements DirHandlerInterface
      */
     public function getPublic(string $path = ""): string
     {
-        return $this->dir->getDir("{$this->publicDirPath}{$path}");
+        return $this->dir->getDir("{$path}");
     }
 
     /**
