@@ -21,6 +21,15 @@ $routes->cli("[/help]", ['MaplePHP\Foundation\Cli\Connectors\Cli', "help"]);
 
 // Group handle is not required, but is a great way to organizing CLI packages->type calls
 
+//$routes->cli("/install", ['MaplePHP\Foundation\Cli\Connectors\Installation', "install"]);
+
+$routes->group("/server", function ($routes) {
+    // It is recommended to add this handle at the begining of every grouped call
+    $routes->map("*", '[/{any:.*}]', ['MaplePHP\Foundation\Cli\Connectors\Cli', "handleMissingType"]);
+    $routes->cli("[/help]", ['MaplePHP\Foundation\Cli\Connectors\Server', "help"]);
+    $routes->cli("/start", ['MaplePHP\Foundation\Cli\Connectors\Server', "start"]);
+});
+
 // Database creation/migration
 $routes->group("/migrate", function ($routes) {
     // It is recommended to add this handle at the begining of every grouped call

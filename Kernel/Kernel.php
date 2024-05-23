@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MaplePHP\Foundation\Kernel;
 
+use MaplePHP\DTO\Format\Arr;
 use MaplePHP\Foundation\Kernel\App;
 use MaplePHP\Http;
 use MaplePHP\Handler;
@@ -78,6 +79,8 @@ class Kernel
      */
     public function runCli(array $argv): void
     {
+        $formatArr = new Arr($argv);
+        $argv = $formatArr->arrayItemExpMerge(":")->get();
         $this->request = new Http\ServerRequest(new Http\Uri($this->env->getUriParts([
             "dir" => $this->dir,
             "rootDir" => $this->rootDir,
