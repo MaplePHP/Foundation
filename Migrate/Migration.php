@@ -15,18 +15,20 @@ class Migration
 
     public function __construct(?RequestInterface $request = null)
     {
-        if (!is_null($request)) {
+        /*
+         if (!is_null($request)) {
             $this->args = $request->getCliArgs();
             $this->setMigration(ucfirst($this->args['table'] ?? ""));
         }
+         */
     }
 
     public function setMigration(string $table): void
     {
         $this->table = $table;
-        $this->migName = $getMigClass = "MaplePHP\\Foundation\\Migrate\\Tables\\{$this->table}";
-        if (class_exists($getMigClass)) {
-            $this->mig = new $getMigClass();
+        $this->migName = $getMigClass = $table;
+        if (class_exists($table)) {
+            $this->mig = new $table();
         }
     }
 

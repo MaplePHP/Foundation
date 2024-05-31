@@ -11,7 +11,7 @@ class Login extends AbstractMigrate
         parent::__construct("login");
     }
 
-    protected function buildTable(): void
+    protected function migrateTable(): void
     {
 
         $this->mig->column("login_id", [

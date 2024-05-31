@@ -81,6 +81,11 @@ class Kernel
     {
         $formatArr = new Arr($argv);
         $argv = $formatArr->arrayItemExpMerge(":")->get();
+
+        if(in_array("--help", $argv)) {
+            $argv = array_merge(array_slice($argv, 0, 2), ['help']);
+        }
+
         $this->request = new Http\ServerRequest(new Http\Uri($this->env->getUriParts([
             "dir" => $this->dir,
             "rootDir" => $this->rootDir,
@@ -89,7 +94,7 @@ class Kernel
 
         $this->init();
 
-        $this->app->enableJsonErrorHandler();
+        $this->app->enablePlainErrorHandler();
         $this->app->setContainer($this->container);
         $this->app->setRouterFiles(["cli"]);
         $this->app->enableTemplateEngine(false);

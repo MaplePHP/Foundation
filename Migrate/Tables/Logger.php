@@ -11,7 +11,7 @@ class Logger extends AbstractMigrate
         parent::__construct("logger");
     }
 
-    protected function buildTable(): void
+    protected function migrateTable(): void
     {
         $this->mig->column("id", [
             "type" => "int",

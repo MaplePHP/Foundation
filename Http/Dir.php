@@ -25,6 +25,16 @@ class Dir implements DirHandlerInterface
     }
 
     /**
+     * Get root dir
+     * @param  string $path
+     * @return string
+     */
+    public function getDir(string $path = ""): string
+    {
+        return $this->dir->getDir($path);
+    }
+
+    /**
      * Get resource dir
      * @param  string $path
      * @return string

@@ -11,7 +11,7 @@ class UsersToken extends AbstractMigrate
         parent::__construct("users_token");
     }
 
-    protected function buildTable(): void
+    protected function migrateTable(): void
     {
 
         // If you want to add multiple primary keys

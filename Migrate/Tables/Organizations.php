@@ -11,7 +11,7 @@ class Organizations extends AbstractMigrate
         parent::__construct("organizations");
     }
 
-    protected function buildTable(): void
+    protected function migrateTable(): void
     {
         $this->mig->column("org_id", [
             "type" => "int",

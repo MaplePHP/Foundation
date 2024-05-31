@@ -7,7 +7,6 @@ namespace MaplePHP\Foundation\Kernel;
 use MaplePHP\Http\Interfaces\ResponseInterface;
 use MaplePHP\Http\Interfaces\RequestInterface;
 use MaplePHP\Http\Interfaces\UrlInterface;
-use MaplePHP\Foundation\Kernel\AppConfigs;
 use MaplePHP\Handler\Emitter;
 use MaplePHP\Handler\RouterDispatcher;
 use MaplePHP\Http\Dir;
@@ -16,7 +15,9 @@ use MaplePHP\DTO\Format\Arr;
 use MaplePHP\DTO\Format\Local;
 use MaplePHP\Container\Reflection;
 use MaplePHP\Query\Connect;
-use Whoops\Handler\HandlerInterface;
+use MaplePHP\Query\Exceptions\ConnectException;
+use MaplePHP\Query\Handlers\MySQLHandler;
+use MaplePHP\Query\Handlers\SQLiteHandler;
 
 class App extends AppConfigs
 {
@@ -35,10 +36,11 @@ class App extends AppConfigs
             $this->dispatcher->request()->getUri()->getRootDir()
         );
     }
-    
+
     /**
      * Setup a MySql Connection
      * @return void
+     * @throws ConnectException
      */
     protected function setupMysqlConnection(): void
     {
@@ -50,16 +52,27 @@ class App extends AppConfigs
             $port = (int)$this->getenv("MYSQL_PORT");
             if($port === 0) $port = 3306;
 
-            $connect = new Connect(
+            $handler = new MySQLHandler(
                 $connect,
                 $this->getenv("MYSQL_USERNAME"),
                 $this->getenv("MYSQL_PASSWORD"),
                 $database,
                 $port,
             );
-            $connect->setCharset($this->getenv("MYSQL_CHARSET"));
-            $connect->setPrefix($this->getenv("MYSQL_PREFIX"));
+
+            //$handler = new SqliteHandler($this->dir->getRoot("database/database.sqlite"));
+
+            $handler->setCharset($this->getenv("MYSQL_CHARSET"));
+            $handler->setPrefix($this->getenv("MYSQL_PREFIX"));
+
+            $connect = Connect::setHandler($handler);
             $connect->execute();
+
+            /*
+            $select = Connect::getInstance()::select("*", "logger");
+            $ww = $select->fetch();
+             */
+
         }
     }
 

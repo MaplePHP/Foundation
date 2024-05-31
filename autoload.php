@@ -11,10 +11,12 @@ $autoLoadPrefixesReplace = ["/", ""] + array_fill(0, count($autoLoadPrefixes), "
 $autoLoadPrefixes = ["\\", "MaplePHP/"] + $autoLoadPrefixes;
 spl_autoload_register(function ($className) use ($dir, $autoLoadPrefixes, $autoLoadPrefixesReplace) {
     $className = str_replace($autoLoadPrefixes, $autoLoadPrefixesReplace, $className);
-    //$exp = explode("/", $className);
-    $classFilePath = "{$dir}app/Libraries/{$className}.php";
+    $classFilePath = "{$dir}app/Libraries/$className.php";
     if (!is_file($classFilePath)) {
-        $classFilePath = "{$dir}app/{$className}.php";
+        $classFilePath = "{$dir}app/$className.php";
+    }
+    if(!is_file($classFilePath)) {
+        $classFilePath = "$dir$className.php";
     }
     if (is_file($classFilePath)) {
         require_once($classFilePath);

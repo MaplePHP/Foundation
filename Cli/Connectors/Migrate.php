@@ -1,93 +1,135 @@
 <?php
-
 namespace MaplePHP\Foundation\Cli\Connectors;
 
-use MaplePHP\Foundation\Cli\Connectors\CliInterface;
-use MaplePHP\Http\Interfaces\ResponseInterface;
-use MaplePHP\Http\Interfaces\RequestInterface;
 use MaplePHP\Container\Interfaces\ContainerInterface;
-use MaplePHP\Query\Exceptions\QueryCreateException;
-use MaplePHP\Foundation\Cli\StandardInput;
+use MaplePHP\Foundation\Http\Dir;
 use MaplePHP\Foundation\Migrate\Migration;
+use MaplePHP\Http\Interfaces\RequestInterface;
+use MaplePHP\Prompts\PromptException;
+//use MaplePHP\Query\Exceptions\QueryCreateException;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use Exception;
 
-class Migrate implements CliInterface
+class Migrate extends AbstractCli
 {
-    protected $container;
-    protected $args;
-    protected $table;
-    protected $cli;
-    protected $migrate;
-    protected $mig;
-    protected $migName;
+    const PROMPT = [];
+    private array $classes;
 
-    public function __construct(ContainerInterface $container, RequestInterface $request, StandardInput $cli, Migration $mig)
+    public function __construct(ContainerInterface $container, RequestInterface $request, Dir $dir)
     {
-        $this->container = $container;
-        $this->args = $request->getCliArgs();
-        $this->cli = $cli;
-        $this->migrate = $mig;
+        parent::__construct($container, $request);
+
+        $classesA = $this->getAllClassesInDir($dir->getPublic(), 'database/migrations');
+        // Class B: borde inte migreras den borde flyttas istället.
+        $classesB = $this->getAllClassesInDir($dir->getPublic(), 'app/Libraries/Foundation/Migrate/Tables', 'MaplePHP\Foundation\Migrate\Tables');
+        $this->classes = $classesA+$classesB;
+
+        $this->addPrompt('migrate',  [
+            "migration" => [
+                "type" => "select",
+                "message" => "Choose migration",
+                "items" => ([0 => 'All']+$this->classes),
+                "description" => "Choose a migration class",
+            ],
+            "read" => [
+                "type" => "hidden",
+                "message" => "Read sql output without migration",
+            ],
+        ]);
     }
 
-    public function create()
+    /**
+     * Create migration
+     *
+     * @param Migration $mig
+     * @return void
+     * @throws PromptException
+     */
+    public function migrate(Migration $mig): void
     {
-        if (!$this->migrate->hasMigration()) {
-            return $this->missingMigrate();
-        }
-
-        $this->cli->confirm("Are you sure you want to migrate the {$this->table} table?", function ($stream) {
+        $action = 'migrate';
+        if($this->hasPrompt($action)) {
+            $promptData = $this->filterSetArgs($this->protocol[$action]);
+            $this->prompt->setTitle("Install the database");
+            $this->prompt->set($promptData);
 
             try {
-                $msg = $this->migrate->getBuild()->create();
-                $stream->write($this->migrate->getBuild()->getMessage($msg));
-            } catch (QueryCreateException $e) {
-                $this->cli->write($e->getMessage());
+                $prompt = $this->prompt->prompt();
+                if($prompt) {
+                    if($prompt['migration'] === 0) {
+                        foreach($this->classes as $class) {
+                            $this->migrateClass($mig, $class);
+                        }
+                    } else {
+                        $this->migrateClass($mig, $prompt['migration']);
+                    }
+                }
+
+            } catch (PromptException $_e) {
+                $this->command->error("The package \"$action\" is not configured correctly!");
+
+            } catch (Exception $e) {
+                throw $e;
             }
-        });
 
-        return $this->cli->getResponse();
-    }
-
-    public function read()
-    {
-        if (!$this->migrate->hasMigration()) {
-            return $this->missingMigrate();
+        } else {
+            $this->command->error("The package \"$action\" do not exists!");
         }
+    }
 
-        try {
-            $this->cli->write($this->migrate->getBuild()->read());
-        } catch (QueryCreateException $e) {
-            $this->cli->write($e->getMessage());
+    /**
+     * Might add to service if it gets more complex
+     *
+     * @param Migration $mig
+     * @param string $class
+     * @return void
+     * @throws \Exception
+     */
+    private function migrateClass(Migration $mig, string $class): void
+    {
+        if(class_exists($class)) {
+            $mig->setMigration($class);
+            if(isset($this->args['read'])) {
+                $this->command->message($mig->getBuild()->read());
+            } else {
+                $msg = $mig->getBuild()->create();
+                $this->command->message($mig->getBuild()->getMessage($msg, "$class has successfully migrated!"));
+            }
+
+        } else {
+            $this->command->error("The migration does not exists!");
         }
-
-
-       // $this->cli->write($this->migrate->getBuild()->read());
-        return $this->cli->getResponse();
     }
 
-    public function drop()
+    /**
+     * Will
+     *
+     * @param string $baseDir
+     * @param string $dir
+     * @param string|null $namespace
+     * @return array
+     */
+    private function getAllClassesInDir(string $baseDir, string $dir, ?string $namespace = null): array
     {
-        if (!$this->migrate->hasMigration()) {
-            return $this->missingMigrate();
+        $classes = [];
+        if(is_null($namespace)) {
+            $namespace = str_replace('/', '\\', $dir);
         }
-        $this->cli->confirm("Are you sure you want to drop the the {$this->table} table?", function ($stream) {
-            $msg = $this->migrate->getBuild()->drop();
-            $stream->write($this->migrate->getBuild()->getMessage($msg));
-        });
-        return $this->cli->getResponse();
-    }
-
-    public function help()
-    {
-        $this->cli->write('$ migrate [type] [--values, --values, ...]');
-        $this->cli->write('Type: read, create, drop or help');
-        $this->cli->write('Values: --table=%s, --help');
-        return $this->cli->getResponse();
-    }
-
-    public function missingMigrate()
-    {
-        $this->cli->write('The migrate "' . $this->migrate->getName() . '" is missing! Read help form more info. ' .
-            '($ migrate help)');
-        return $this->cli->getResponse();
+        $dir = $baseDir.$dir;
+        $rii = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir));
+        foreach ($rii as $file) {
+            if (!$file->isDir()) {
+                $filePath = basename($file->getRealPath());
+                $end = explode(".", $filePath);
+                $end = end($end);
+                if($end === "php") {
+                    $className = str_replace([DIRECTORY_SEPARATOR, '.php'], ['\\', ''], $filePath);
+                    $class = $namespace . '\\' . $className;
+                    $classes[$class] = $class;
+                }
+            }
+        }
+        return $classes;
     }
 }
