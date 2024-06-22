@@ -1,0 +1,36 @@
+{
+  "controller": {
+    "default": [
+      {
+        "file": "app/Http/Controllers/Default",
+        "name": "%sController"
+      }
+    ],
+    "request": [
+      {
+        "file": "app/Http/Controllers/Request",
+        "name": "%sController"
+      },
+      {
+        "file": "app/Models/Request",
+        "name": "%sRequestModel"
+      }
+    ]
+  },
+  "model": {
+    "request": [
+      {
+        "file": "app/Models/Request",
+        "name": "%sRequestModel"
+      }
+    ]
+  },
+  "middleware": {
+    "default": ["app/Http/Middlewares/Default"],
+    "document": ["app/Http/Middlewares/Document"],
+    "navigation": ["app/Http/Middlewares/Navigation"]
+  },
+  "migration": {
+    "default": ["database/migrations/Default"]
+  }
+}

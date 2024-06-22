@@ -4,23 +4,30 @@ declare(strict_types=1);
 
 namespace MaplePHP\Foundation\Form;
 
+use MaplePHP\Container\Interfaces\ContainerExceptionInterface;
 use MaplePHP\Container\Interfaces\ContainerInterface;
+use MaplePHP\Container\Interfaces\NotFoundExceptionInterface;
 use MaplePHP\Form\Fields;
 use MaplePHP\Foundation\Security\Csrf;
 use MaplePHP\Foundation\Form\FormFields;
 
-use BadMethodCallException;
-
+/**
+ * @method Fields add(array[] $array)
+ */
 class Builder
 {
     public const FORM_NAME = null;
 
-    protected $form;
-    protected $csrf;
-    
+    protected Fields $form;
+    protected Csrf $csrf;
+
     /**
      * Form modal will combine all essentials libraries
      * @param ContainerInterface $container
+     * @param FormFields $FormFields
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws \Exception
      */
     public function __construct(ContainerInterface $container, FormFields $FormFields)
     {

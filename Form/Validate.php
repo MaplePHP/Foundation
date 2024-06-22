@@ -2,13 +2,15 @@
 
 namespace MaplePHP\Foundation\Form;
 
+use MaplePHP\Container\Interfaces\ContainerExceptionInterface;
 use MaplePHP\Container\Interfaces\ContainerInterface;
-use MaplePHP\Http\Interfaces\ServerRequestInterface;
+use MaplePHP\Container\Interfaces\NotFoundExceptionInterface;
 use MaplePHP\Foundation\Security\Csrf;
 use MaplePHP\Foundation\Http\Json;
 use MaplePHP\Form\Validate as valid;
-use MaplePHP\Foundation\Form\Builder;
 use MaplePHP\Foundation\Form\Forms\AbstractForm;
+//use MaplePHP\Http\Interfaces\ServerRequestInterface;
+//use MaplePHP\Foundation\Form\Builder;
 
 class Validate
 {
@@ -18,6 +20,11 @@ class Validate
     protected $json;
 
 
+    /**
+     * @throws NotFoundExceptionInterface
+     * @throws ContainerExceptionInterface
+     * @throws \Exception
+     */
     public function __construct(ContainerInterface $container, Json $json)
     {
         $this->container = $container;
@@ -27,8 +34,8 @@ class Validate
 
     /**
      * This will validate the form
-     * @param  Form|AbstractForm    $form  Instance of Form or AbstractForm
-     * @param  array|object|null    $data  Request data
+     * @param Builder|AbstractForm $form Instance of Form or AbstractForm
+     * @param array|object|null $data Request data
      * @return bool|array False or XSS protected data
      */
     public function validate(Builder|AbstractForm $form, array|object|null $data)

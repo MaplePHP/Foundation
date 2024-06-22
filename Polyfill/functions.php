@@ -13,7 +13,7 @@
  * @return 0 if the two operands are equal, 1 if the num1 is larger than the num2, -1 otherwise.
  */
 if (!function_exists("bccomp")) {
-    function bccomp(float $number1, float $number2, int $scale = 0)
+    function bccomp(float $number1, float $number2, int $scale = 0): int
     {
         $num1 = (float)number_format($number1, $scale, "", "");
         $num2 = (float)number_format($number2, $scale, "", "");
@@ -24,5 +24,19 @@ if (!function_exists("bccomp")) {
             return -1;
         }
         return 0;
+    }
+}
+
+if(!function_exists('fnmatch')) {
+    function fnmatch($pattern, $string): bool|int
+    {
+        return preg_match("#^".strtr(preg_quote($pattern, '#'), array('\*' => '.*', '\?' => '.'))."$#i", $string);
+    }
+}
+
+if(!function_exists('mb_substr')) {
+    function mb_substr(string $string, int $start, ?int $length, ?string $encoding): string
+    {
+        return "";
     }
 }

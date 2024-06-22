@@ -7,8 +7,8 @@ use MaplePHP\Foundation\Http\Provider;
 
 abstract class AbstractForm
 {
-    protected $form;
-    protected $provider;
+    protected Builder $form;
+    protected Provider $provider;
 
     public function __construct(Provider $provider, Builder $form)
     {
@@ -18,16 +18,16 @@ abstract class AbstractForm
     }
 
     /**
-     * Create form - Setup the form inside of this method
+     * Create form - Set up the form inside of this method
      * @return void
      */
     abstract protected function createForm(): void;
 
     /**
      * Direct access form instance
-     * @return form
+     * @return Builder
      */
-    public function form()
+    public function form(): Builder
     {
         return $this->form;
     }
@@ -35,12 +35,12 @@ abstract class AbstractForm
     /**
      * Shortcut to all the class Models\Form\Form AND MaplePHP\Form\Fields methods!
      * If thrown Error, then it will be triggered from Models\Form\Form
-     * @param  string $a Method name
-     * @param  array $b argumnets
+     * @param string $method Method name
+     * @param array $args arguments
      * @return mixed
      */
-    public function __call($a, $b)
+    public function __call(string $method, array $args)
     {
-        return call_user_func_array([$this->form, $a], $b);
+        return call_user_func_array([$this->form, $method], $args);
     }
 }

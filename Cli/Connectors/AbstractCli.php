@@ -3,6 +3,7 @@
 namespace MaplePHP\Foundation\Cli\Connectors;
 
 use MaplePHP\Foundation\DocComment\Comment;
+use MaplePHP\Foundation\Http\Provider;
 use MaplePHP\Http\Interfaces\RequestInterface;
 use MaplePHP\Container\Interfaces\ContainerInterface;
 use MaplePHP\Prompts\Prompt;
@@ -16,15 +17,17 @@ abstract class AbstractCli implements CliInterface
     protected array $protocol;
     protected Prompt $prompt;
     protected Command $command;
+    protected Provider $provider;
     private array $input = [];
 
-    public function __construct(ContainerInterface $container, RequestInterface $request)
+    public function __construct(ContainerInterface $container, RequestInterface $request, Provider $provider)
     {
         $this->container = $container;
         $this->args = $request->getCliArgs();
         $this->prompt = new Prompt();
         $this->command = new Command();
         $this->protocol = static::PROMPT;
+        $this->provider = $provider;
     }
 
     /**
@@ -112,6 +115,18 @@ abstract class AbstractCli implements CliInterface
         return $block;
     }
 
+    /**
+     * Will help generate help texts in PHP Maple Cli
+     * Example: Extending Prompt Array items
+     * --help:
+     * description: Add parameter types usage example to prompt help text
+     * default: Add Default value to parameter usage example to prompt help text
+     * help: Force remove parameter type from usage example in prompt help text
+     * @param array $comment
+     * @param string $class
+     * @param string $method
+     * @return void
+     */
     private function generateHelpText(array $comment, string $class, string $method) {
         $classA = "$class:$method";
         $length = strlen($classA);
@@ -122,16 +137,19 @@ abstract class AbstractCli implements CliInterface
             $valid = reset($this->protocol[$method]);
             //isValidPrompt
             if(isset($valid['type']) && isset($valid['message'])) {
+
                 $this->command->statusMsg($classA, false);
                 $this->command->message("{$padA}{$comment['description']}");
 
                 $fill = "{$padB} ";
                 $this->command->title("{$fill}Arguments");
                 foreach ($this->protocol[$method] as $arg => $data) {
-                    $message = (!empty($data['description'])) ? $data['description'] : ($data['message'] ?? "");
-                    $addEg = (!empty($data['default'])) ? " (example: {$data['default']})" : "";
-                    $this->command->approve("$fill--$arg: ", false);
-                    $this->command->message($message . $addEg);
+                    if((bool)($data['help'] ?? true) !== false) {
+                        $message = (!empty($data['description'])) ? $data['description'] : ($data['message'] ?? "");
+                        $addEg = (!empty($data['default'])) ? " (example: {$data['default']})" : "";
+                        $this->command->approve("$fill--$arg: ", false);
+                        $this->command->message($message . $addEg);
+                    }
                 }
                 $this->command->message("\n");
             }

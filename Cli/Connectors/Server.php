@@ -74,4 +74,5 @@ class Server extends AbstractCli
             $this->command->error("Could not connect to host!");
         }
     }
+
 }

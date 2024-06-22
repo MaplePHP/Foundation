@@ -12,6 +12,7 @@ use MaplePHP\DTO\Format\DateTime;
 use MaplePHP\DTO\Format\Str;
 use MaplePHP\DTO\Format\Local;
 use MaplePHP\DTO\Format\Encode;
+use MaplePHP\Query\Connect;
 use MaplePHP\Query\DB;
 use BadMethodCallException;
 
@@ -59,24 +60,15 @@ class Provider
         });
 
         self::$container->set("env", function (string $key, string $fallback = "") {
-
-
-            /*
-            if(is_array($key)) {
-               $keyA = strtoupper($key[0] ?? "");
-               $keyB = strtoupper($key[1] ?? "");
-               $key = "{$keyA}_{$keyB}"
-            }
-             */
             $value = (getenv($key) !== false) ? (string)getenv($key) : $fallback;
             return new Str($value);
         });
 
-        self::$container->set("encode", function ($value) {
+        self::$container->set("encode", function (array|string $value) {
             return new Encode($value);
         });
 
-        self::$container->set("local", function ($langKey) {
+        self::$container->set("local", function (string $langKey) {
             $data = [
                 "auth" => Local::value("auth"),
                 "validate" => Local::value("validate")
@@ -84,8 +76,8 @@ class Provider
             return ($data[$langKey] ?? null);
         });
 
-        self::$container->set("DB", function () {
-            return new DB();
+        self::$container->set("DB", function (?string $key = null) {
+            return Connect::getInstance($key);
         });
     }
 

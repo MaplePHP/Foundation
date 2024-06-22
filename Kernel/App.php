@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MaplePHP\Foundation\Kernel;
 
+use MaplePHP\Handler\Exceptions\EmitterException;
 use MaplePHP\Http\Interfaces\ResponseInterface;
 use MaplePHP\Http\Interfaces\RequestInterface;
 use MaplePHP\Http\Interfaces\UrlInterface;
@@ -24,8 +25,7 @@ class App extends AppConfigs
     protected Emitter $emitter;
     protected RouterDispatcher $dispatcher;
     protected ?object $whoops = null;
-
-    private $installed = false;
+    private bool $installed = false;
 
     public function __construct(Emitter $emitter, RouterDispatcher $dispatcher)
     {
@@ -119,7 +119,7 @@ class App extends AppConfigs
             });
         }
 
-        // Set default envars, which can be used in config files!
+        // Set default env:ars, which can be used in config files!
         $env->execute();
         $this->attr = array_merge($this->attr, $env->getData());
     }
@@ -127,6 +127,7 @@ class App extends AppConfigs
     /**
      * Setup Routers
      * @return void
+     * @throws EmitterException
      */
     protected function setupRouters(): void
     {
@@ -210,8 +211,10 @@ class App extends AppConfigs
     }
 
     /**
-     * Setup the dispatcher
+     * Set up the dispatcher
+     * @param callable|null $call
      * @return void
+     * @throws EmitterException
      */
     protected function setupDispatch(?callable $call = null): void
     {
@@ -243,7 +246,10 @@ class App extends AppConfigs
     /**
      * Add a class that will where it's instance will be remembered through the app and its
      * controllers, To do this, you must first create an interface of the class, which will
-     * become its uniqe identifier.
+     * become its unique identifier.
+     * @param $response
+     * @param $request
+     * @param $url
      * @return void
      */
     final protected function defaultInterfaces($response, $request, $url): void
@@ -294,6 +300,7 @@ class App extends AppConfigs
 
     /**
      * Set response headers
+     * @param $response
      * @return ResponseInterface
      */
     protected function setupHeaders($response): ResponseInterface
@@ -313,9 +320,11 @@ class App extends AppConfigs
     }
 
     /**
-      * Run the application
-      * @return void
-      */
+     * Run the application
+     * @return void
+     * @throws ConnectException
+     * @throws EmitterException
+     */
     public function run(): void
     {
         $this->setupConfig();
@@ -362,15 +371,13 @@ class App extends AppConfigs
                 $this->enablePlainErrorHandler();
         }
 
-
         // Handle error response IF contentType has changed!
         $this->setupErrorHandler();
 
-        // If you set a buffered response string it will get priorities agains all outher response
+        // If you set a buffered response string it will get priorities against all other response
         $this->emitter->outputBuffer($this->dispatcher->getBufferedResponse());
         $this->emitter->run($response, $request);
     }
-
 
     private function htmlDocPlaceholder(): string
     {

@@ -12,8 +12,8 @@ class StreamLogger
     public const MAX_SIZE = 5000; //KB
     public const MAX_COUNT = 10;
 
-    private $handler;
-    private $logger;
+    private StreamHandler $handler;
+    private ?Logger $logger = null;
 
     public function __construct(DirInterface $dir)
     {
