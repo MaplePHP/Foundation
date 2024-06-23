@@ -31,8 +31,10 @@
         "maplephp/roles": "^1.0.0",
         "maplephp/swiftrender": "^1.0.0",
         "maplephp/validate": "^1.0.0",
-        "maplephp/prompts": "^1.0.0",
-        "maplephp/unitary ": "^1.0.0"
+        "maplephp/prompts": "^1.0.0"
+    },
+    "require-dev": {
+        "maplephp/unitary": "^1.0"
     },
     "autoload": {
         "psr-4": {
